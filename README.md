@@ -1,6 +1,56 @@
-
-
 # Sixteen
+
+# Tổ chức dự án Nx
+
+```
+apps
+├─ gateway
+├─ note
+├─ token
+├─ user
+│  ├─ src
+│  │  ├─ app
+│  │  │  ├─ ...
+│  │  │  ├─ app.controller.spec.ts
+│  │  │  ├─ app.controller.ts
+│  │  │  ├─ app.module.ts
+│  │  │  ├─ app.service.spec.ts
+│  │  │  └─ app.service.spec.ts
+│  │  ├─ assets
+│  │  ├─ environments
+│  │  └─ main.ts
+│  ├─ test
+│  ├─ ...
+│  ├─ jest.config.js
+│  ├─ tsconfig.app.json
+│  ├─ tsconfig.json
+│  └─ tsconfig.spec.json
+├─ docker
+├─ libs
+├─ tools
+├─ .env.local
+├─ jest.config.js
+├─ nx.json
+├─ package.json
+├─ tsconfig.base.json
+└─ workspace.json
+```
+
+![image](https://user-images.githubusercontent.com/20491540/157286762-740ed9c6-a941-44cc-ae20-c98129d0dbb9.png)
+
+# Development Environment
+
+> Name: Nx Console
+> 
+> Id: nrwl.angular-console
+> 
+> Description: Nx Console for Visual Studio Code
+> 
+> Version: 17.14.1
+> 
+> Publisher: nrwl
+> 
+> VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=nrwl.angular-console
 
 This project was generated using [Nx](https://nx.dev).
 
