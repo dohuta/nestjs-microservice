@@ -1,0 +1,296 @@
+{
+  "version": 2,
+  "projects": {
+    "gateway": {
+      "root": "apps/gateway",
+      "sourceRoot": "apps/gateway/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:webpack",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/gateway",
+            "main": "apps/gateway/src/main.ts",
+            "tsConfig": "apps/gateway/tsconfig.app.json",
+            "assets": ["apps/gateway/src/assets"]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/gateway/src/environments/environment.ts",
+                  "with": "apps/gateway/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:node",
+          "options": {
+            "buildTarget": "gateway:build",
+            "port": 9230
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/gateway/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/gateway"],
+          "options": {
+            "jestConfig": "apps/gateway/jest.config.js",
+            "passWithNoTests": true,
+            "runInBand": true,
+            "codeCoverage": true,
+            "coverageReporters": ["html", "text", "lcovonly"],
+            "coverageDirectory": "coverage/apps/gateway",
+            "reporters": ["default"]
+          }
+        }
+      },
+      "tags": []
+    },
+    "note": {
+      "root": "apps/note",
+      "sourceRoot": "apps/note/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:webpack",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/note",
+            "main": "apps/note/src/main.ts",
+            "tsConfig": "apps/note/tsconfig.app.json",
+            "assets": ["apps/note/src/assets"]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/note/src/environments/environment.ts",
+                  "with": "apps/note/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:node",
+          "options": {
+            "buildTarget": "note:build",
+            "port": 9231
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/note/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/note"],
+          "options": {
+            "jestConfig": "apps/note/jest.config.js",
+            "passWithNoTests": true,
+            "runInBand": true,
+            "codeCoverage": true,
+            "coverageReporters": ["html", "text", "lcovonly"],
+            "coverageDirectory": "coverage/apps/note",
+            "reporters": ["default"]
+          }
+        }
+      },
+      "tags": []
+    },
+    "permission": {
+      "root": "apps/permission",
+      "sourceRoot": "apps/permission/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:webpack",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/permission",
+            "main": "apps/permission/src/main.ts",
+            "tsConfig": "apps/permission/tsconfig.app.json",
+            "assets": ["apps/permission/src/assets"]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/permission/src/environments/environment.ts",
+                  "with": "apps/permission/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:node",
+          "options": {
+            "buildTarget": "permission:build",
+            "port": 9232
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/permission/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/permission"],
+          "options": {
+            "jestConfig": "apps/permission/jest.config.js",
+            "passWithNoTests": true,
+            "runInBand": true,
+            "codeCoverage": true,
+            "coverageReporters": ["html", "text", "lcovonly"],
+            "coverageDirectory": "coverage/apps/permission",
+            "reporters": ["default"]
+          }
+        }
+      },
+      "tags": []
+    },
+    "token": {
+      "root": "apps/token",
+      "sourceRoot": "apps/token/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:webpack",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/token",
+            "main": "apps/token/src/main.ts",
+            "tsConfig": "apps/token/tsconfig.app.json",
+            "assets": ["apps/token/src/assets"]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/token/src/environments/environment.ts",
+                  "with": "apps/token/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:node",
+          "options": {
+            "buildTarget": "token:build",
+            "port": 9233
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/token/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/token"],
+          "options": {
+            "jestConfig": "apps/token/jest.config.js",
+            "passWithNoTests": true,
+            "runInBand": true,
+            "codeCoverage": true,
+            "coverageReporters": ["html", "text", "lcovonly"],
+            "coverageDirectory": "coverage/apps/token",
+            "reporters": ["default"]
+          }
+        }
+      },
+      "tags": []
+    },
+    "user": {
+      "root": "apps/user",
+      "sourceRoot": "apps/user/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:webpack",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/user",
+            "main": "apps/user/src/main.ts",
+            "tsConfig": "apps/user/tsconfig.app.json",
+            "assets": ["apps/user/src/assets"]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/user/src/environments/environment.ts",
+                  "with": "apps/user/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:node",
+          "options": {
+            "buildTarget": "user:build",
+            "port": 9234
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/user/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/user"],
+          "options": {
+            "jestConfig": "apps/user/jest.config.js",
+            "passWithNoTests": true,
+            "runInBand": true,
+            "codeCoverage": true,
+            "coverageReporters": ["html", "text", "lcovonly"],
+            "coverageDirectory": "coverage/apps/user",
+            "reporters": ["default"]
+          }
+        }
+      },
+      "tags": []
+    }
+  },
+  "defaultProject": "gateway"
+}

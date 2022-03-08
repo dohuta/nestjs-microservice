@@ -1,0 +1,57 @@
+/**
+ * This is not a production server yet!
+ * This is only a minimal backend to get started.
+ */
+
+import { Logger } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+
+/* extra packages/libs */
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json } from 'body-parser';
+import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
+import * as requestIp from 'request-ip';
+
+import { AppModule } from './app/app.module';
+import { ConfigService } from './app/Services/config.service';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  /* config our app */
+  app.use(json({ limit: '5mb' })); // maxLenght of json body
+  app.use(requestIp.mw());
+  app.enableCors();
+  // app.use(helmet());
+  app.use(
+    rateLimit({
+      windowMs: 1000, // 1s
+      max: 5, // limit each IP to 5 requests per 1s
+      message: 'Too many requests, please try again later.',
+    })
+  );
+
+  const globalPrefix = 'api';
+
+  /* create api document */
+  const options = new DocumentBuilder()
+    .setTitle('API Documents')
+    .setDescription('The API Document')
+    .setVersion('1.0')
+    .addServer(`${process.env.BASE_URI}/${globalPrefix}`)
+    .build();
+  const doc = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup(`${globalPrefix}/document`, app, doc);
+
+  app.setGlobalPrefix(globalPrefix);
+
+  /* start application */
+  const port = new ConfigService().get('port') || 3333;
+  await app.listen(port);
+  Logger.log(
+    `🚀 GATEWAY is running on: http://localhost:${port}/${globalPrefix}`
+  );
+}
+
+bootstrap();
