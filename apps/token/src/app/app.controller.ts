@@ -13,7 +13,7 @@ export class TokenController {
   constructor(private readonly tokenService: TokenService) {}
 
   @MessagePattern('token_create')
-  public async createToken(data: { userId: string }): Promise<ITokenResponse> {
+  public async createToken(data: { userId: number }): Promise<ITokenResponse> {
     this.logger.log(
       `${this.createToken.name} called::request ${JSON.stringify(data)}`
     );
@@ -49,7 +49,7 @@ export class TokenController {
 
   @MessagePattern('token_destroy')
   public async destroyToken(data: {
-    userId: string;
+    userId: number;
   }): Promise<ITokenDestroyResponse> {
     this.logger.log(
       `${this.destroyToken.name} called::request ${JSON.stringify(data)}`

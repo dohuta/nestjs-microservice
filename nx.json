@@ -28,5 +28,6 @@
         "projects": "dependencies"
       }
     ]
-  }
+  },
+  "defaultProject": "gateway"
 }

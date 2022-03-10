@@ -1,15 +1,14 @@
-import { Document } from 'mongoose';
-
-export interface INote extends Document {
+export interface INote {
+  id: number;
   name: string;
   content: string;
-  user_id: string;
-  created_at: Date;
-  updated_at: Date;
+  user_id: number;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export interface INoteCreate {
   name: string;
   content: string;
-  user_id: string;
+  user_id: number;
 }

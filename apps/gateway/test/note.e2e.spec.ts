@@ -11,7 +11,7 @@ describe('Notes (e2e)', () => {
 
   let app;
   let user;
-  let noteId: string;
+  let noteId: number;
   let userToken: string;
 
   afterAll(async () => {

@@ -1,4 +1,4 @@
 export interface INoteUpdateParams {
-  name: string;
-  content: string;
+  name?: string;
+  content?: string;
 }

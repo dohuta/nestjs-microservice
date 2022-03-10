@@ -1,12 +1,7 @@
-import { INote } from './../../../gateway/src/app/interfaces/note/note.interface';
-import { NoteSchema } from './schemas/note.schema';
+import { NoteModule } from './app.module';
 import { Test } from '@nestjs/testing';
-import { MongooseModule } from '@nestjs/mongoose';
 
 import { NoteController } from './app.controller';
-import { NoteService } from './app.service';
-import { MongoConfigService } from './Services/config/mongo-config.service';
-import * as mongoose from 'mongoose';
 
 describe('NoteController', () => {
   jest.setTimeout(30000);
@@ -15,51 +10,23 @@ describe('NoteController', () => {
   let noteId;
 
   beforeAll(async () => {
-    // connect to db
-    // use this mongo connection to verify result
-    await mongoose.connect(process.env.MONGO_URI);
-
     const app = await Test.createTestingModule({
-      imports: [
-        MongooseModule.forRootAsync({
-          useClass: MongoConfigService,
-        }),
-        MongooseModule.forFeature([
-          {
-            name: 'Note',
-            schema: NoteSchema,
-          },
-        ]),
-      ],
-      controllers: [NoteController],
-      providers: [NoteService],
+      imports: [NoteModule],
     }).compile();
 
     controller = app.get<NoteController>(NoteController);
   });
 
-  beforeEach(async () => {
-    // clean up db after testing
-    const collections = await mongoose.connection.db.collections();
+  beforeEach(async () => {});
 
-    for (let collection of collections) {
-      await collection.deleteMany({});
-    }
-  });
-
-  afterAll(async () => {
-    // clean up db after testing
-    await mongoose.connection.db.dropCollection('notes');
-    // close connection
-    await mongoose.connection.close();
-  });
+  afterAll(async () => {});
 
   describe('create note', () => {
     it('[happi case] should create note', async () => {
       const note = {
         name: 'test',
         content: 'test',
-        user_id: 'test',
+        user_id: 2,
       };
 
       const result = await controller.noteCreate(note);
@@ -73,11 +40,11 @@ describe('NoteController', () => {
       const note = {
         name: 'test',
         content: 'test',
-        user_id: 'test',
+        user_id: 2,
       };
 
       await controller.noteCreate(note);
-      const result = await controller.noteSearchByUserId('test');
+      const result = await controller.noteSearchByUserId(2);
       expect(result.message).toBe('note_search_by_user_id_success');
       expect(result.status).toBe(200);
       expect(result.notes).toBeDefined();
@@ -87,22 +54,23 @@ describe('NoteController', () => {
     it('[happi case] should update note by id', async () => {
       const note = {
         name: 'test',
-        content: 'test',
-        user_id: 'test',
+        content: 'test2',
+        user_id: 2,
       };
 
       const created = await controller.noteCreate(note);
       noteId = created.note.id;
-      note.content = 'changed';
       const result = await controller.noteUpdateById({
-        note,
+        note: {
+          content: 'changed',
+        },
         id: noteId,
-        userId: note.user_id,
+        user_id: note.user_id,
       });
       expect(result.message).toBe('note_update_by_id_success');
       expect(result.status).toBe(200);
       expect(result.note).toBeDefined();
-      expect(result.note.content).toBe(note.content);
+      expect(result.note.content).toBe('changed');
     });
   });
 });

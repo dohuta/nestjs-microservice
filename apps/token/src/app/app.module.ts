@@ -1,26 +1,33 @@
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
+
 import { TokenController } from './app.controller';
 import { TokenService } from './app.service';
 import { JwtConfigService } from './Services/config/jwt-config.service';
-import { MongoConfigService } from './Services/config/mongo-config.service';
-import { TokenSchema } from './schemas/token.schema';
+import { Note, Token, User } from 'libs/database/src/model/entities';
+
+const DB_HOST = process.env.DB_HOST;
+const DB_PORT = Number(process.env.DB_PORT);
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const DB_DATABASE = process.env.DB_DATABASE;
 
 @Module({
   imports: [
     JwtModule.registerAsync({
       useClass: JwtConfigService,
     }),
-    MongooseModule.forRootAsync({
-      useClass: MongoConfigService,
+    TypeOrmModule.forRoot({
+      type: 'mssql',
+      host: DB_HOST,
+      port: DB_PORT,
+      username: DB_USER,
+      password: DB_PASSWORD,
+      database: DB_DATABASE,
+      entities: [Note, Token, User],
     }),
-    MongooseModule.forFeature([
-      {
-        name: 'Token',
-        schema: TokenSchema,
-      },
-    ]),
+    TypeOrmModule.forFeature([Token]),
   ],
   controllers: [TokenController],
   providers: [TokenService],

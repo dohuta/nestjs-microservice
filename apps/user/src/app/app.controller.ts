@@ -1,5 +1,6 @@
 import { Controller, HttpStatus, Inject, Logger } from '@nestjs/common';
 import { MessagePattern, ClientProxy } from '@nestjs/microservices';
+import * as bcrypt from 'bcrypt';
 
 import { UserService } from './app.service';
 import { IUser } from './interfaces/user.interface';
@@ -32,7 +33,7 @@ export class UserController {
       });
 
       if (user && user[0]) {
-        if (await user[0].compareEncryptedPassword(searchParams.password)) {
+        if (user[0].password == searchParams.password) {
           result = {
             status: HttpStatus.OK,
             message: 'user_search_by_credentials_success',
@@ -70,7 +71,7 @@ export class UserController {
   }
 
   @MessagePattern('user_get_by_id')
-  public async getUserById(id: string): Promise<IUserSearchResponse> {
+  public async getUserById(id: number): Promise<IUserSearchResponse> {
     this.logger.log(`${this.getUserById.name} called::request ${id}`);
 
     let result: IUserSearchResponse;
@@ -168,5 +169,9 @@ export class UserController {
     );
 
     return result;
+  }
+
+  private compareEncryptedPassword(a, b) {
+    return bcrypt.compare(b, a);
   }
 }

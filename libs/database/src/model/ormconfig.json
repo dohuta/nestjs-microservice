@@ -1,0 +1,13 @@
+[
+  {
+    "name": "default",
+    "type": "mssql",
+    "host": "va-delivery-logging.database.windows.net",
+    "port": 1433,
+    "username": "va-delivery-logging",
+    "password": "Hi@ll123",
+    "database": "",
+    "synchronize": false,
+    "entities": ["entities/*.js"]
+  }
+]

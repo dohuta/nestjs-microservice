@@ -14,3 +14,9 @@ process.env.USER_SERVICE_HOST = '0.0.0.0';
 process.env.PERMISSION_SERVICE_PORT = '8005';
 process.env.PERMISSION_SERVICE_HOST = 'permission';
 process.env.BASE_URI = 'http://localhost';
+
+process.env.DB_USER = 'va-delivery-logging';
+process.env.DB_PASSWORD = 'Hi@ll123';
+process.env.DB_DATABASE = 'learning-mssql';
+process.env.DB_HOST = 'va-delivery-logging.database.windows.net';
+process.env.DB_PORT = '1433';

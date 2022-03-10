@@ -8,6 +8,7 @@ import { INoteSearchByUserResponse } from './interfaces/note-search-by-user-resp
 import { INoteDeleteResponse } from './interfaces/note-delete-response.interface';
 import { INoteCreateResponse } from './interfaces/note-create-response.interface';
 import { INoteUpdateByIdResponse } from './interfaces/note-update-by-id-response.interface';
+import { Note } from 'libs/database/src/model/entities';
 
 @Controller()
 export class NoteController {
@@ -15,9 +16,19 @@ export class NoteController {
 
   constructor(private readonly noteService: NoteService) {}
 
+  private map(note: Note): INote {
+    return {
+      id: note.id,
+      name: note.name,
+      content: note.content,
+      user_id: note.user && note.user.id,
+      created_at: note.createdAt,
+      updated_at: note.updatedAt,
+    };
+  }
   @MessagePattern('note_search_by_user_id')
   public async noteSearchByUserId(
-    userId: string
+    userId: number
   ): Promise<INoteSearchByUserResponse> {
     this.logger.log(`${this.noteSearchByUserId.name}::user id ${userId}`);
     let result: INoteSearchByUserResponse;
@@ -27,7 +38,7 @@ export class NoteController {
       result = {
         status: HttpStatus.OK,
         message: 'note_search_by_user_id_success',
-        notes,
+        notes: notes.map((x) => this.map(x)),
       };
     } else {
       result = {
@@ -48,8 +59,8 @@ export class NoteController {
   @MessagePattern('note_update_by_id')
   public async noteUpdateById(params: {
     note: INoteUpdateParams;
-    id: string;
-    userId: string;
+    id: number;
+    user_id: number;
   }): Promise<INoteUpdateByIdResponse> {
     this.logger.log(
       `${this.noteUpdateById.name}::params ${JSON.stringify(params)}`
@@ -60,15 +71,27 @@ export class NoteController {
       try {
         const note = await this.noteService.findNoteById(params.id);
         if (note) {
-          if (note.user_id === params.userId) {
-            const updatedNote = Object.assign(note, params.note);
-            await updatedNote.save();
-            result = {
-              status: HttpStatus.OK,
-              message: 'note_update_by_id_success',
-              note: updatedNote,
-              errors: null,
-            };
+          if (note.user.id === params.user_id) {
+            try {
+              // delete params.note.user_id;
+              const updatedNote = Object.assign(note, params.note);
+              const r = await this.noteService.updateNote(updatedNote);
+              if (r) {
+                result = {
+                  status: HttpStatus.OK,
+                  message: 'note_update_by_id_success',
+                  note: this.map(updatedNote),
+                  errors: null,
+                };
+              }
+            } catch (e) {
+              result = {
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                message: 'note_update_by_id_failed',
+                note: null,
+                errors: e.errors,
+              };
+            }
           } else {
             result = {
               status: HttpStatus.FORBIDDEN,
@@ -122,7 +145,7 @@ export class NoteController {
         result = {
           status: HttpStatus.CREATED,
           message: 'note_create_success',
-          note,
+          note: this.map(note),
           errors: null,
         };
       } catch (e) {
@@ -155,8 +178,8 @@ export class NoteController {
 
   @MessagePattern('note_delete_by_id')
   public async noteDeleteForUser(params: {
-    userId: string;
-    id: string;
+    userId: number;
+    id: number;
   }): Promise<INoteDeleteResponse> {
     this.logger.log(
       `${this.noteDeleteForUser.name}::params ${JSON.stringify(params)}`
@@ -169,7 +192,7 @@ export class NoteController {
         const note = await this.noteService.findNoteById(params.id);
 
         if (note) {
-          if (note.user_id === params.userId) {
+          if (note.user.id === params.userId) {
             await this.noteService.removeNoteById(params.id);
             result = {
               status: HttpStatus.OK,

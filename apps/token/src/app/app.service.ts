@@ -1,7 +1,9 @@
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Query } from 'mongoose';
+
+import { Token } from 'libs/database/src/model/entities';
 import { IToken } from './interfaces/token.interface';
 
 @Injectable()
@@ -11,10 +13,11 @@ export class TokenService {
 
   constructor(
     private readonly jwtService: JwtService,
-    @InjectModel('Token') private readonly tokenModel: Model<IToken>
+    @InjectRepository(Token)
+    private readonly tokenRepository: Repository<Token>
   ) {}
 
-  public createToken(userId: string): Promise<IToken> {
+  public createToken(userId: number): Promise<Token> {
     this.logger.log(`${this.createToken.name} called`);
 
     const token = this.jwtService.sign(
@@ -26,25 +29,31 @@ export class TokenService {
       }
     );
 
-    return new this.tokenModel({
-      user_id: userId,
+    return this.tokenRepository.save({
       token,
-    }).save();
+      user: {
+        id: userId,
+      },
+    });
   }
 
-  public deleteTokenForUserId(userId: string): Query<any, any> {
+  public async deleteTokenForUserId(
+    userId: number
+  ): Promise<Token | undefined> {
     this.logger.log(`${this.deleteTokenForUserId.name} called`);
 
-    return this.tokenModel.remove({
-      user_id: userId,
+    const token = await this.tokenRepository.find({
+      where: { user: { id: userId } },
     });
+    const result = await this.tokenRepository.remove(token);
+    return result && result.length ? result[0] : undefined;
   }
 
   public async decodeToken(token: string) {
     this.logger.log(`${this.decodeToken.name} called`);
 
-    const tokenModel = await this.tokenModel.find({
-      token,
+    const tokenModel = await this.tokenRepository.find({
+      where: { token },
     });
     let result = null;
 

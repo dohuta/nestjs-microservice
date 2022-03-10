@@ -1,50 +1,56 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { INote, INoteCreate } from './interfaces/note.interface';
-import { INoteUpdateParams } from './interfaces/note-update-params.interface';
+import { INoteCreate } from './interfaces/note.interface';
+import { Note } from 'libs/database/src/model/entities';
 
 @Injectable()
 export class NoteService {
   private readonly logger = new Logger(`NOTE::${NoteService.name}`);
 
-  constructor(@InjectModel('Note') private readonly noteModel: Model<INote>) {}
+  constructor(
+    @InjectRepository(Note)
+    private readonly noteRepository: Repository<Note>
+  ) {}
 
-  public async getNotesByUserId(userId: string): Promise<INote[]> {
+  public async getNotesByUserId(userId: number) {
     this.logger.log(`${this.getNotesByUserId.name}::user id ${userId}`);
-    return this.noteModel.find({ user_id: userId }).exec();
+    return await this.noteRepository.find({
+      where: { user: { id: userId } },
+    });
   }
 
-  public async createNote(noteBody: INoteCreate): Promise<INote> {
+  public async createNote(noteBody: INoteCreate) {
     this.logger.log(
       `${this.getNotesByUserId.name}::note ${JSON.stringify(noteBody)}`
     );
-    const noteModel = new this.noteModel(noteBody);
-    return await noteModel.save();
+    return this.noteRepository.save({
+      name: noteBody.name,
+      content: noteBody.content,
+      user: {
+        id: noteBody.user_id,
+      },
+    });
   }
 
-  public async findNoteById(id: string) {
+  public async findNoteById(id: number) {
     this.logger.log(`${this.getNotesByUserId.name}::note id ${id}`);
-    return await this.noteModel.findById(id);
+    return await this.noteRepository.findOne(id, { relations: ['user'] });
   }
 
-  public async removeNoteById(id: string) {
+  public async removeNoteById(id: number) {
     this.logger.log(`${this.getNotesByUserId.name}::note id ${id}`);
-    return await this.noteModel.findOneAndDelete({ _id: id });
+    const result = await this.noteRepository.delete({ id });
+    return !!result.affected;
   }
 
-  public async updateNoteById(
-    id: string,
-    params: INoteUpdateParams
-  ): Promise<INote> {
+  public async updateNote(params: Note) {
     this.logger.log(
-      `${this.getNotesByUserId.name}::note id ${id}::params ${JSON.stringify(
-        params
-      )}`
+      `${this.getNotesByUserId.name}::note id::params ${JSON.stringify(params)}`
     );
-    await this.noteModel.updateOne({ _id: id }, params).exec();
-
-    return this.noteModel.findById(id);
+    const { id, ...rest } = params;
+    const result = await this.noteRepository.update({ id: id }, rest);
+    return !!result.affected;
   }
 }

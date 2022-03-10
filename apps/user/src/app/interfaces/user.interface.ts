@@ -1,8 +1,6 @@
 export interface IUser {
-  id?: string;
+  id?: number;
   email: string;
   password: string;
   is_confirmed?: boolean;
-  compareEncryptedPassword?: (password: string) => boolean;
-  getEncryptedPassword?: (password: string) => string;
 }
