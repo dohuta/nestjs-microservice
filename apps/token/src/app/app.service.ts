@@ -1,10 +1,7 @@
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { Token } from 'libs/database/src/model/entities';
-import { IToken } from './interfaces/token.interface';
+import { Token } from '@libs/db';
 
 @Injectable()
 export class TokenService {
@@ -13,11 +10,11 @@ export class TokenService {
 
   constructor(
     private readonly jwtService: JwtService,
-    @InjectRepository(Token)
-    private readonly tokenRepository: Repository<Token>
+    @Inject('TOKEN_REPOSITORY')
+    private readonly repo: typeof Token
   ) {}
 
-  public createToken(userId: number): Promise<Token> {
+  public async createToken(userId: string): Promise<Token> {
     this.logger.log(`${this.createToken.name} called`);
 
     const token = this.jwtService.sign(
@@ -28,36 +25,32 @@ export class TokenService {
         expiresIn: 30 * 24 * 60 * 60,
       }
     );
-
-    return this.tokenRepository.save({
-      token,
-      user: {
-        id: userId,
-      },
+    return this.repo.create({
+      token: token,
+      userId: userId,
     });
   }
 
-  public async deleteTokenForUserId(
-    userId: number
-  ): Promise<Token | undefined> {
+  public async deleteTokenForUserId(userId: string): Promise<Boolean> {
     this.logger.log(`${this.deleteTokenForUserId.name} called`);
 
-    const token = await this.tokenRepository.find({
-      where: { user: { id: userId } },
+    const result = await this.repo.destroy({
+      where: {
+        userId,
+      },
     });
-    const result = await this.tokenRepository.remove(token);
-    return result && result.length ? result[0] : undefined;
+    return !!result;
   }
 
-  public async decodeToken(token: string) {
+  public async decodeToken(token: string): Promise<{ userId: string } | null> {
     this.logger.log(`${this.decodeToken.name} called`);
 
-    const tokenModel = await this.tokenRepository.find({
+    const tokenModel = await this.repo.findOne({
       where: { token },
     });
     let result = null;
 
-    if (tokenModel && tokenModel[0]) {
+    if (tokenModel) {
       try {
         const tokenData = this.jwtService.decode(tokenModel[0].token) as {
           exp: number;

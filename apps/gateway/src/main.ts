@@ -3,7 +3,7 @@
  * This is only a minimal backend to get started.
  */
 
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 /* extra packages/libs */
@@ -44,14 +44,13 @@ async function bootstrap() {
   const doc = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup(`${globalPrefix}/document`, app, doc);
 
+  app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix(globalPrefix);
 
   /* start application */
   const port = new ConfigService().get('port') || 3333;
   await app.listen(port);
-  Logger.log(
-    `🚀 GATEWAY is running on: http://localhost:${port}/${globalPrefix}`
-  );
+  Logger.log(`🚀 GATEWAY is running on ${port}/${globalPrefix}`);
 }
 
 bootstrap();

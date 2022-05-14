@@ -22,14 +22,13 @@ describe('User microservice', () => {
 
   it('should create a valid user', async () => {
     const requestData = {
-      email: 'test2@test.com',
+      username: 'test2@test.com',
       password: 'test111',
     };
     const result = await controller.createUser(requestData);
 
     expect(result.status).toBe(201);
     expect(result.message).toBe('user_create_success');
-    expect(result.user).toBeTruthy();
-    expect(result.user.id).toBeTruthy();
+    expect(result.data).toBeTruthy();
   });
 });

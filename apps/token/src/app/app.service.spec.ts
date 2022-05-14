@@ -22,9 +22,10 @@ describe('TOKEN SERVICE', () => {
 
   describe('create token', () => {
     it('[happi case] should create token successfully', async () => {
-      const result = await service.createToken(2);
-      expect(result.user.id).toBe(2);
-      expect(result.token).toBeTruthy();
+      const result = await service.createToken(
+        'c3e1f1e1-4b22-47f1-89ce-ff410b9234b2'
+      );
+      expect(result.id).toBeTruthy();
     });
   });
 });

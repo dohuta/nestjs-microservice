@@ -1,11 +1,16 @@
-import { Controller, HttpStatus, Inject, Logger } from '@nestjs/common';
-import { MessagePattern, ClientProxy } from '@nestjs/microservices';
+import { Controller, Get, HttpStatus, Logger, Post } from '@nestjs/common';
+import { MessagePattern } from '@nestjs/microservices';
+import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 import * as bcrypt from 'bcrypt';
 
 import { UserService } from './app.service';
-import { IUser } from './interfaces/user.interface';
-import { IUserCreateResponse } from './interfaces/user-create-response.interface';
-import { IUserSearchResponse } from './interfaces/user-search-response.interface';
+import {
+  BaseResponse,
+  FindUserResponse,
+  SignUpPayload,
+  SignUpResponse,
+} from '@libs/dtos';
+import { User } from '@libs/db';
 
 @Controller('user')
 export class UserController {
@@ -14,55 +19,46 @@ export class UserController {
 
   constructor(private readonly userService: UserService) {}
 
-  @MessagePattern('user_search_by_credentials')
-  public async searchUserByCredentials(searchParams: {
+  @MessagePattern('user_search_by_email')
+  public async searchUserByEmail(searchParams: {
     email: string;
-    password: string;
-  }): Promise<IUserSearchResponse> {
+  }): Promise<BaseResponse<FindUserResponse | null>> {
     this.logger.log(
-      `${this.searchUserByCredentials.name} called::request ${JSON.stringify(
+      `${this.searchUserByEmail.name} called::request ${JSON.stringify(
         searchParams
       )}`
     );
 
-    let result: IUserSearchResponse;
+    let result: BaseResponse<FindUserResponse | null>;
 
-    if (searchParams.email && searchParams.password) {
+    if (searchParams.email) {
       const user = await this.userService.searchUser({
         email: searchParams.email,
       });
 
-      if (user && user[0]) {
-        if (user[0].password == searchParams.password) {
-          result = {
-            status: HttpStatus.OK,
-            message: 'user_search_by_credentials_success',
-            user: user[0],
-          };
-        } else {
-          result = {
-            status: HttpStatus.NOT_FOUND,
-            message: 'user_search_by_credentials_not_match',
-            user: null,
-          };
-        }
+      if (user && user.length == 1 && user[0].id) {
+        result = {
+          status: HttpStatus.OK,
+          message: 'user_search_by_email_success',
+          data: FindUserResponse.fromEntity(user[0]),
+        };
       } else {
         result = {
           status: HttpStatus.NOT_FOUND,
-          message: 'user_search_by_credentials_not_found',
-          user: null,
+          message: 'user_search_by_email_not_found',
+          data: null,
         };
       }
     } else {
       result = {
         status: HttpStatus.NOT_FOUND,
-        message: 'user_search_by_credentials_not_found',
-        user: null,
+        message: 'user_search_by_email_not_found',
+        data: null,
       };
     }
 
     this.logger.log(
-      `${this.searchUserByCredentials.name} responses::result ${JSON.stringify(
+      `${this.searchUserByEmail.name} responses::result ${JSON.stringify(
         result
       )}`
     );
@@ -71,10 +67,12 @@ export class UserController {
   }
 
   @MessagePattern('user_get_by_id')
-  public async getUserById(id: number): Promise<IUserSearchResponse> {
+  public async getUserById(
+    id: number
+  ): Promise<BaseResponse<FindUserResponse | null>> {
     this.logger.log(`${this.getUserById.name} called::request ${id}`);
 
-    let result: IUserSearchResponse;
+    let result: BaseResponse<FindUserResponse | null>;
 
     if (id) {
       const user = await this.userService.searchUserById(id);
@@ -82,20 +80,20 @@ export class UserController {
         result = {
           status: HttpStatus.OK,
           message: 'user_get_by_id_success',
-          user,
+          data: FindUserResponse.fromEntity(user),
         };
       } else {
         result = {
           status: HttpStatus.NOT_FOUND,
           message: 'user_get_by_id_not_found',
-          user: null,
+          data: null,
         };
       }
     } else {
       result = {
         status: HttpStatus.BAD_REQUEST,
         message: 'user_get_by_id_bad_request',
-        user: null,
+        data: null,
       };
     }
 
@@ -107,49 +105,42 @@ export class UserController {
   }
 
   @MessagePattern('user_create')
-  public async createUser(userParams: IUser): Promise<IUserCreateResponse> {
+  public async createUser(
+    userParams: SignUpPayload
+  ): Promise<BaseResponse<SignUpResponse | string>> {
     this.logger.log(
       `${this.createUser.name} called::request ${JSON.stringify(
         JSON.stringify(userParams)
       )}`
     );
 
-    let result: IUserCreateResponse;
+    let result: BaseResponse<SignUpResponse | string>;
 
-    if (userParams) {
+    if (userParams && userParams.password && userParams.username) {
       const usersWithEmail = await this.userService.searchUser({
-        email: userParams.email,
+        email: userParams.username,
       });
 
       if (usersWithEmail && usersWithEmail.length > 0) {
         result = {
           status: HttpStatus.CONFLICT,
           message: 'user_create_conflict',
-          user: null,
-          errors: {
-            email: {
-              message: 'Email already exists',
-              path: 'email',
-            },
-          },
+          data: 'Email đã tồn tại',
         };
       } else {
         try {
-          userParams.is_confirmed = true;
           const createdUser = await this.userService.createUser(userParams);
           delete createdUser.password;
           result = {
             status: HttpStatus.CREATED,
             message: 'user_create_success',
-            user: createdUser,
-            errors: null,
+            data: SignUpResponse.fromEntity(createdUser),
           };
         } catch (e) {
           result = {
             status: HttpStatus.PRECONDITION_FAILED,
             message: 'user_create_precondition_failed',
-            user: null,
-            errors: e.errors,
+            data: 'Không thể tạo Account',
           };
         }
       }
@@ -157,8 +148,7 @@ export class UserController {
       result = {
         status: HttpStatus.BAD_REQUEST,
         message: 'user_create_bad_request',
-        user: null,
-        errors: null,
+        data: 'Thiếu thông tin',
       };
     }
 

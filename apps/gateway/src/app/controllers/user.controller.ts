@@ -8,27 +8,23 @@ import {
   Inject,
   HttpStatus,
   HttpException,
-  Param,
   Logger,
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
-import { ApiTags, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
+import {
+  BaseResponse,
+  FindUserResponse,
+  SignInPayload,
+  SignInResponse,
+  SignUpPayload,
+  SignUpResponse,
+} from '@libs/dtos';
 import { Authorization } from '../decorators/authorization.decorator';
-import { IAuthorizedRequest } from '../interfaces/common/authorized-request.interface';
-import { IServiceUserCreateResponse } from '../interfaces/user/service-user-create-response.interface';
-import { IServiceUserSearchResponse } from '../interfaces/user/service-user-search-response.interface';
-import { IServiveTokenCreateResponse } from '../interfaces/token/service-token-create-response.interface';
-import { IServiceTokenDestroyResponse } from '../interfaces/token/service-token-destroy-response.interface';
-import { IServiceUserGetByIdResponse } from '../interfaces/user/service-user-get-by-id-response.interface';
-
-import { GetUserByTokenResponseDto } from '../interfaces/user/dto/get-user-by-token-response.dto';
-import { CreateUserDto } from '../interfaces/user/dto/create-user.dto';
-import { CreateUserResponseDto } from '../interfaces/user/dto/create-user-response.dto';
-import { LoginUserDto } from '../interfaces/user/dto/login-user.dto';
-import { LoginUserResponseDto } from '../interfaces/user/dto/login-user-response.dto';
-import { LogoutUserResponseDto } from '../interfaces/user/dto/logout-user-response.dto';
+import { IAuthorizedRequest } from '../../interfaces/ICommon';
+import { ApiBaseResponse } from '../decorators/baseResponse.decorator';
 
 @Controller('users')
 @ApiTags('users')
@@ -43,110 +39,91 @@ export class UsersController {
 
   @Get()
   @Authorization(true)
-  @ApiOkResponse({
-    type: GetUserByTokenResponseDto,
-  })
+  @ApiBaseResponse({ model: FindUserResponse, dataType: 'array' })
   public async getUserByToken(
     @Req() request: IAuthorizedRequest
-  ): Promise<GetUserByTokenResponseDto> {
+  ): Promise<BaseResponse<FindUserResponse[]>> {
     this.logger.log(
       `${this.getUserByToken.name} called::user id${request.user.id}`
     );
 
     const userInfo = request.user;
 
-    const userResponse: IServiceUserGetByIdResponse = await firstValueFrom(
+    const response: BaseResponse<FindUserResponse[]> = await firstValueFrom(
       this.userServiceClient.send('user_get_by_id', userInfo.id)
     );
 
     this.logger.log(
-      `${this.getUserByToken.name} responses::user id${request.user.id}::user ${userResponse.status}`
+      `${this.getUserByToken.name} responses::user id${request.user.id}::user ${response.status}`
     );
-    return {
-      message: userResponse.message,
-      data: {
-        user: userResponse.user,
-      },
-      errors: null,
-    };
+    return response;
   }
 
   @Post('/signup')
-  @ApiCreatedResponse({
-    type: CreateUserResponseDto,
-  })
+  @ApiBaseResponse({ dataType: 'string' })
   public async createUser(
-    @Body() userRequest: CreateUserDto
-  ): Promise<CreateUserResponseDto> {
+    @Body() userRequest: SignUpPayload
+  ): Promise<BaseResponse<String>> {
     this.logger.log(
       `${this.createUser.name} called::request ${JSON.stringify(userRequest)}`
     );
 
-    const createUserResponse: IServiceUserCreateResponse = await firstValueFrom(
-      this.userServiceClient.send('user_create', userRequest)
-    );
-    if (createUserResponse.status !== HttpStatus.CREATED) {
-      throw new HttpException(
-        {
-          message: createUserResponse.message,
-          data: null,
-          errors: createUserResponse.errors,
-        },
-        createUserResponse.status
+    const createUserResponse: BaseResponse<SignUpResponse> =
+      await firstValueFrom(
+        this.userServiceClient.send('user_create', userRequest)
       );
+    if (createUserResponse.status !== HttpStatus.CREATED) {
+      return {
+        status: createUserResponse.status,
+        message: createUserResponse.message,
+        data:
+          typeof createUserResponse.data === 'string'
+            ? createUserResponse.data
+            : null,
+      };
     }
 
-    const createTokenResponse: IServiveTokenCreateResponse =
-      await firstValueFrom(
-        this.tokenServiceClient.send('token_create', {
-          userId: createUserResponse.user.id,
-        })
-      );
+    const createTokenResponse: BaseResponse<String> = await firstValueFrom(
+      this.tokenServiceClient.send('token_create', {
+        userId: createUserResponse.data.id,
+      })
+    );
 
     this.logger.log(
       `${this.createUser.name} responses::created ${createTokenResponse.status}`
     );
 
-    return {
-      message: createUserResponse.message,
-      data: {
-        user: createUserResponse.user,
-        token: createTokenResponse.token,
-      },
-      errors: null,
-    };
+    return createTokenResponse;
   }
 
   @Post('/login')
-  @ApiCreatedResponse({
-    type: LoginUserResponseDto,
-  })
+  @ApiBaseResponse({ model: SignUpResponse, dataType: 'object' })
   public async loginUser(
-    @Body() loginRequest: LoginUserDto
-  ): Promise<LoginUserResponseDto> {
+    @Body() loginRequest: SignInPayload
+  ): Promise<BaseResponse<SignInResponse>> {
     this.logger.log(
       `${this.loginUser.name} called::request ${JSON.stringify(loginRequest)}`
     );
 
-    const getUserResponse: IServiceUserSearchResponse = await firstValueFrom(
-      this.userServiceClient.send('user_search_by_credentials', loginRequest)
-    );
+    const getUserResponse: BaseResponse<FindUserResponse> =
+      await firstValueFrom(
+        this.userServiceClient.send('user_search_by_email', loginRequest)
+      );
 
     if (getUserResponse.status !== HttpStatus.OK) {
       throw new HttpException(
         {
           message: getUserResponse.message,
-          data: null,
-          errors: null,
+          data: getUserResponse.data,
         },
         HttpStatus.UNAUTHORIZED
       );
     }
 
-    const createTokenResponse: IServiveTokenCreateResponse =
+    const createTokenResponse: BaseResponse<SignInResponse> =
       await firstValueFrom(
         this.tokenServiceClient.send('token_create', {
-          userId: getUserResponse.user.id,
+          userId: getUserResponse.data.id,
         })
       );
 
@@ -155,40 +132,36 @@ export class UsersController {
     );
 
     return {
+      status: HttpStatus.OK,
       message: createTokenResponse.message,
       data: {
-        token: createTokenResponse.token,
+        token: createTokenResponse.data.token,
       },
-      errors: null,
     };
   }
 
   @Put('/logout')
   @Authorization(true)
-  @ApiCreatedResponse({
-    type: LogoutUserResponseDto,
-  })
+  @ApiBaseResponse({ dataType: 'boolean' })
   public async logoutUser(
     @Req() request: IAuthorizedRequest
-  ): Promise<LogoutUserResponseDto> {
+  ): Promise<BaseResponse<Boolean>> {
     this.logger.log(
       `${this.logoutUser.name} called::user id${request.user.id}`
     );
     const userInfo = request.user;
 
-    const destroyTokenResponse: IServiceTokenDestroyResponse =
-      await firstValueFrom(
-        this.tokenServiceClient.send('token_destroy', {
-          userId: userInfo.id,
-        })
-      );
+    const destroyTokenResponse: BaseResponse<Boolean> = await firstValueFrom(
+      this.tokenServiceClient.send('token_destroy', {
+        userId: userInfo.id,
+      })
+    );
 
     if (destroyTokenResponse.status !== HttpStatus.OK) {
       throw new HttpException(
         {
           message: destroyTokenResponse.message,
-          data: null,
-          errors: destroyTokenResponse.errors,
+          data: false,
         },
         destroyTokenResponse.status
       );
@@ -198,9 +171,9 @@ export class UsersController {
       `${this.logoutUser.name} responses::destroy auth ${destroyTokenResponse.status}`
     );
     return {
+      status: HttpStatus.OK,
       message: destroyTokenResponse.message,
-      errors: null,
-      data: null,
+      data: true,
     };
   }
 }

@@ -1,23 +1,102 @@
 {
   "version": 2,
   "projects": {
-    "database": {
-      "root": "libs/database",
-      "sourceRoot": "libs/database/src",
+    "db": {
+      "root": "libs/db",
+      "sourceRoot": "libs/db/src",
       "projectType": "library",
       "targets": {
+        "build": {
+          "executor": "@nrwl/js:tsc",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/db",
+            "tsConfig": "libs/db/tsconfig.lib.json",
+            "packageJson": "libs/db/package.json",
+            "main": "libs/db/src/index.ts",
+            "assets": ["libs/db/*.md"]
+          }
+        },
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "outputs": ["{options.outputFile}"],
           "options": {
-            "lintFilePatterns": ["libs/database/**/*.ts"]
+            "lintFilePatterns": ["libs/db/**/*.ts"]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/database"],
+          "outputs": ["coverage/libs/db"],
           "options": {
-            "jestConfig": "libs/database/jest.config.js",
+            "jestConfig": "libs/db/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "tags": []
+    },
+    "decorators": {
+      "root": "libs/decorators",
+      "sourceRoot": "libs/decorators/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/js:tsc",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/decorators",
+            "tsConfig": "libs/decorators/tsconfig.lib.json",
+            "packageJson": "libs/decorators/package.json",
+            "main": "libs/decorators/src/index.ts",
+            "assets": ["libs/decorators/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/decorators/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/decorators"],
+          "options": {
+            "jestConfig": "libs/decorators/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "tags": []
+    },
+    "dtos": {
+      "root": "libs/dtos",
+      "sourceRoot": "libs/dtos/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/js:tsc",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/dtos",
+            "tsConfig": "libs/dtos/tsconfig.lib.json",
+            "packageJson": "libs/dtos/package.json",
+            "main": "libs/dtos/src/index.ts",
+            "assets": ["libs/dtos/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/dtos/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/dtos"],
+          "options": {
+            "jestConfig": "libs/dtos/jest.config.js",
             "passWithNoTests": true
           }
         }
@@ -134,64 +213,6 @@
             "codeCoverage": true,
             "coverageReporters": ["html", "text", "lcovonly"],
             "coverageDirectory": "coverage/apps/note",
-            "reporters": ["default"]
-          }
-        }
-      },
-      "tags": []
-    },
-    "permission": {
-      "root": "apps/permission",
-      "sourceRoot": "apps/permission/src",
-      "projectType": "application",
-      "targets": {
-        "build": {
-          "executor": "@nrwl/node:webpack",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/apps/permission",
-            "main": "apps/permission/src/main.ts",
-            "tsConfig": "apps/permission/tsconfig.app.json",
-            "assets": ["apps/permission/src/assets"]
-          },
-          "configurations": {
-            "production": {
-              "optimization": true,
-              "extractLicenses": true,
-              "inspect": false,
-              "fileReplacements": [
-                {
-                  "replace": "apps/permission/src/environments/environment.ts",
-                  "with": "apps/permission/src/environments/environment.prod.ts"
-                }
-              ]
-            }
-          }
-        },
-        "serve": {
-          "executor": "@nrwl/node:node",
-          "options": {
-            "buildTarget": "permission:build",
-            "port": 9232
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
-          "options": {
-            "lintFilePatterns": ["apps/permission/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/permission"],
-          "options": {
-            "jestConfig": "apps/permission/jest.config.js",
-            "passWithNoTests": true,
-            "runInBand": true,
-            "codeCoverage": true,
-            "coverageReporters": ["html", "text", "lcovonly"],
-            "coverageDirectory": "coverage/apps/permission",
             "reporters": ["default"]
           }
         }

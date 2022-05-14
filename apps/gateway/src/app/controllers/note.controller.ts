@@ -14,28 +14,12 @@ import {
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
-import {
-  ApiTags,
-  ApiOkResponse,
-  ApiCreatedResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { Authorization } from '../decorators/authorization.decorator';
-// import { Permission } from '../decorators/permission.decorator';
-
-import { IAuthorizedRequest } from '../interfaces/common/authorized-request.interface';
-import { IServiceNoteCreateResponse } from '../interfaces/note/service-note-create-response.interface';
-import { IServiceNoteDeleteResponse } from '../interfaces/note/service-note-delete-response.interface';
-import { IServiceNoteSearchByUserIdResponse } from '../interfaces/note/service-note-search-by-user-id-response.interface';
-import { IServiceNoteUpdateByIdResponse } from '../interfaces/note/service-note-update-by-id-response.interface';
-import { GetNotesResponseDto } from '../interfaces/note/dto/get-notes-response.dto';
-import { CreateNoteResponseDto } from '../interfaces/note/dto/create-note-response.dto';
-import { DeleteNoteResponseDto } from '../interfaces/note/dto/delete-note-response.dto';
-import { UpdateNoteResponseDto } from '../interfaces/note/dto/update-note-response.dto';
-import { CreateNoteDto } from '../interfaces/note/dto/create-note.dto';
-import { UpdateNoteDto } from '../interfaces/note/dto/update-note.dto';
-import { NoteIdDto } from '../interfaces/note/dto/note-id.dto';
+import { BaseResponse, UpsertNotePayload, UpsertNoteReponse } from '@libs/dtos';
+import { IAuthorizedRequest } from '../../interfaces/ICommon';
+import { ApiBaseResponse } from '../decorators/baseResponse.decorator';
 
 @Controller('notes') // endpoint
 @ApiBearerAuth() // authentication
@@ -48,65 +32,52 @@ export class NotesController {
     @Inject('NOTE_SERVICE') private readonly noteServiceClient: ClientProxy
   ) {}
 
-  @Get() // the verb/method
-  @Authorization(true) // force checking auth
-  // @Permission('note_search_by_user_id')
-  @ApiOkResponse({
-    type: GetNotesResponseDto,
-    description: 'List of notes for signed in user',
-  }) // this is use for api documentation
+  @Get()
+  @Authorization(true)
+  @ApiBaseResponse({ model: UpsertNoteReponse, dataType: 'object' })
   public async getNotes(
     @Req() request: IAuthorizedRequest
-  ): Promise<GetNotesResponseDto> {
+  ): Promise<BaseResponse<UpsertNoteReponse[] | null>> {
     this.logger.log(`${this.getNotes.name} called::user id${request.user.id}`);
 
     const userInfo = request.user;
 
-    const notesResponse: IServiceNoteSearchByUserIdResponse =
+    const notesResponse: BaseResponse<UpsertNoteReponse[] | null> =
       await firstValueFrom(
         this.noteServiceClient.send('note_search_by_user_id', userInfo.id)
       );
 
     this.logger.log(
-      `${this.getNotes.name} responses::user id${request.user.id}::notes ${notesResponse.notes.length}`
+      `${this.getNotes.name} responses::user id${request.user.id}::notes ${notesResponse.data.length}`
     );
-    return {
-      message: notesResponse.message,
-      data: {
-        notes: notesResponse.notes,
-      },
-      errors: null,
-    };
+    return notesResponse;
   }
 
   @Post()
   @Authorization(true)
-  // @Permission('note_create')
-  @ApiCreatedResponse({
-    type: CreateNoteResponseDto,
-  })
+  @ApiBaseResponse({ model: UpsertNoteReponse, dataType: 'object' })
   public async createNote(
     @Req() request: IAuthorizedRequest,
-    @Body() noteRequest: CreateNoteDto
-  ): Promise<CreateNoteResponseDto> {
+    @Body() noteRequest: UpsertNotePayload
+  ): Promise<BaseResponse<UpsertNoteReponse | null>> {
     this.logger.log(
       `${this.createNote.name} called::user id${request.user.id}`
     );
 
     const userInfo = request.user;
-    const createNoteResponse: IServiceNoteCreateResponse = await firstValueFrom(
-      this.noteServiceClient.send(
-        'note_create',
-        Object.assign(noteRequest, { user_id: userInfo.id })
-      )
-    );
+    const createNoteResponse: BaseResponse<UpsertNoteReponse | null> =
+      await firstValueFrom(
+        this.noteServiceClient.send(
+          'note_create',
+          Object.assign(noteRequest, { user_id: userInfo.id })
+        )
+      );
 
     if (createNoteResponse.status !== HttpStatus.CREATED) {
       throw new HttpException(
         {
           message: createNoteResponse.message,
           data: null,
-          errors: createNoteResponse.errors,
         },
         createNoteResponse.status
       );
@@ -116,32 +87,23 @@ export class NotesController {
       `${this.createNote.name} responses::user id${request.user.id}::created ${createNoteResponse.status}`
     );
 
-    return {
-      message: createNoteResponse.message,
-      data: {
-        note: createNoteResponse.note,
-      },
-      errors: null,
-    };
+    return createNoteResponse;
   }
 
   @Delete(':id')
   @Authorization(true)
-  // @Permission('note_delete_by_id')
-  @ApiOkResponse({
-    type: DeleteNoteResponseDto,
-  })
+  @ApiBaseResponse({ dataType: 'boolean' })
   public async deleteNote(
     @Req() request: IAuthorizedRequest,
-    @Param() params: NoteIdDto
-  ): Promise<DeleteNoteResponseDto> {
+    @Param() params: { id: string }
+  ): Promise<BaseResponse<Boolean>> {
     this.logger.log(
       `${this.deleteNote.name} called::user id${request.user.id}`
     );
 
     const userInfo = request.user;
 
-    const deleteNoteResponse: IServiceNoteDeleteResponse = await firstValueFrom(
+    const deleteNoteResponse: BaseResponse<Boolean> = await firstValueFrom(
       this.noteServiceClient.send('note_delete_by_id', {
         id: params.id,
         userId: userInfo.id,
@@ -152,8 +114,7 @@ export class NotesController {
       throw new HttpException(
         {
           message: deleteNoteResponse.message,
-          errors: deleteNoteResponse.errors,
-          data: null,
+          data: false,
         },
         deleteNoteResponse.status
       );
@@ -163,30 +124,23 @@ export class NotesController {
       `${this.createNote.name} responses::user id${request.user.id}::deleted ${deleteNoteResponse.status}`
     );
 
-    return {
-      message: deleteNoteResponse.message,
-      data: null,
-      errors: null,
-    };
+    return deleteNoteResponse;
   }
 
   @Put(':id')
   @Authorization(true)
-  // @Permission('note_update_by_id')
-  @ApiOkResponse({
-    type: UpdateNoteResponseDto,
-  })
+  @ApiBaseResponse({ dataType: 'boolean' })
   public async updateNote(
     @Req() request: IAuthorizedRequest,
-    @Param() params: NoteIdDto,
-    @Body() noteRequest: UpdateNoteDto
-  ): Promise<UpdateNoteResponseDto> {
+    @Param() params: { id: string },
+    @Body() noteRequest: UpsertNotePayload
+  ): Promise<BaseResponse<UpsertNoteReponse | null>> {
     this.logger.log(
       `${this.updateNote.name} called::user id${request.user.id}`
     );
 
     const userInfo = request.user;
-    const updateNoteResponse: IServiceNoteUpdateByIdResponse =
+    const updateNoteResponse: BaseResponse<UpsertNoteReponse | null> =
       await firstValueFrom(
         this.noteServiceClient.send('note_update_by_id', {
           id: params.id,
@@ -199,7 +153,6 @@ export class NotesController {
       throw new HttpException(
         {
           message: updateNoteResponse.message,
-          errors: updateNoteResponse.errors,
           data: null,
         },
         updateNoteResponse.status
@@ -209,12 +162,6 @@ export class NotesController {
     this.logger.log(
       `${this.updateNote.name} responses::user id${request.user.id}::updated ${updateNoteResponse.status}`
     );
-    return {
-      message: updateNoteResponse.message,
-      data: {
-        note: updateNoteResponse.note,
-      },
-      errors: null,
-    };
+    return updateNoteResponse;
   }
 }

@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import * as mongoose from 'mongoose';
 import * as request from 'supertest';
 import { AppModule } from '../src/app/app.module';
 import { userSignupRequestSuccess } from './mocks/user-signup-request-success.mock';
@@ -14,18 +13,6 @@ describe('Users Sign Up (e2e)', () => {
 
   let app;
 
-  afterAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI);
-    const collections = await mongoose.connection.db.collections();
-
-    for (let collection of collections) {
-      await collection.deleteMany({});
-    }
-    // close connection
-    await mongoose.connection.close();
-    await app.close()
-  });
-
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -39,30 +26,10 @@ describe('Users Sign Up (e2e)', () => {
     request(app.getHttpServer())
       .post('/users/signup')
       .send()
-      .expect(412)
-      .expect((res) => {
-        res.body.errors.email.properties = 'fake_properties';
-        res.body.errors.password.properties = 'fake_properties';
-      })
+      .expect(400)
       .expect({
         data: null,
-        message: 'user_create_precondition_failed',
-        errors: {
-          password: {
-            message: 'Password can not be empty',
-            name: 'ValidatorError',
-            properties: 'fake_properties',
-            kind: 'required',
-            path: 'password',
-          },
-          email: {
-            message: 'Email can not be empty',
-            name: 'ValidatorError',
-            properties: 'fake_properties',
-            kind: 'required',
-            path: 'email',
-          },
-        },
+        message: 'user_create_bad_request',
       })
       .end(done);
   });

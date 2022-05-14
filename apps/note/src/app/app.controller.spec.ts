@@ -26,51 +26,57 @@ describe('NoteController', () => {
       const note = {
         name: 'test',
         content: 'test',
-        user_id: 2,
       };
 
-      const result = await controller.noteCreate(note);
+      const result = await controller.noteCreate({
+        noteBody: note,
+        userId: 'c3e1f1e1-4b22-47f1-89ce-ff410b9234b2',
+      });
       expect(result.message).toBe('note_create_success');
       expect(result.status).toBe(201);
-      expect(result.note).toBeDefined();
-      expect(result.note.content).toBe('test');
+      expect(result.data).toBeDefined();
+      expect(result.data.content).toBe('test');
     });
 
     it('[happi case] should search note by user id', async () => {
       const note = {
-        name: 'test',
-        content: 'test',
-        user_id: 2,
+        name: 'test 2',
+        content: 'test 2',
       };
 
-      await controller.noteCreate(note);
-      const result = await controller.noteSearchByUserId(2);
+      const theNote = await controller.noteCreate({
+        noteBody: note,
+        userId: 'c3e1f1e1-4b22-47f1-89ce-ff410b9234b2',
+      });
+      const result = await controller.noteSearchByUserId('c3e1f1e1-4b22-47f1-89ce-ff410b9234b2');
       expect(result.message).toBe('note_search_by_user_id_success');
       expect(result.status).toBe(200);
-      expect(result.notes).toBeDefined();
-      expect(result.notes.length).toBe(1);
+      expect(result.data).toBeDefined();
+      expect(result.data.length).toBe(2);
     });
 
     it('[happi case] should update note by id', async () => {
       const note = {
-        name: 'test',
-        content: 'test2',
-        user_id: 2,
+        name: 'test 3',
+        content: 'test 3',
       };
 
-      const created = await controller.noteCreate(note);
-      noteId = created.note.id;
+      const created = await controller.noteCreate({
+        noteBody: note,
+        userId: 'c3e1f1e1-4b22-47f1-89ce-ff410b9234b2',
+      });
+      noteId = created.data.id;
       const result = await controller.noteUpdateById({
         note: {
           content: 'changed',
         },
         id: noteId,
-        user_id: note.user_id,
+        userId: 'c3e1f1e1-4b22-47f1-89ce-ff410b9234b2',
       });
       expect(result.message).toBe('note_update_by_id_success');
       expect(result.status).toBe(200);
-      expect(result.note).toBeDefined();
-      expect(result.note.content).toBe('changed');
+      expect(result.data).toBeDefined();
+      expect(result.data.content).toBe('changed');
     });
   });
 });

@@ -12,5 +12,5 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/user',
-  setupFiles: ['<rootDir>/test/config.ts']
+  setupFiles: ['<rootDir>/test/config.ts'],
 };

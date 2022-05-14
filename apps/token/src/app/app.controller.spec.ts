@@ -22,10 +22,10 @@ describe('TOKEN CONTROLLER', () => {
 
   describe('create token', () => {
     it('[happi case] should create token successfully', async () => {
-      const result = await controller.createToken({ userId: 2 });
+      const result = await controller.createToken({ userId: "c3e1f1e1-4b22-47f1-89ce-ff410b9234b2" });
 
       expect(result.message).toBe('token_create_success');
-      expect(result.token).toBeTruthy();
+      expect(result.data).toBeTruthy();
     });
   });
 });

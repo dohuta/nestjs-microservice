@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
-import * as mongoose from 'mongoose';
 import { AppModule } from '../src/app/app.module';
 import { userSignupRequestSuccess } from './mocks/user-signup-request-success.mock';
 import { noteCreateRequestSuccess } from './mocks/note-create-request-success.mock';
@@ -13,18 +12,6 @@ describe('Notes (e2e)', () => {
   let user;
   let noteId: number;
   let userToken: string;
-
-  afterAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI);
-    const collections = await mongoose.connection.db.collections();
-
-    for (let collection of collections) {
-      await collection.deleteMany({});
-    }
-    // close connection
-    await mongoose.connection.close();
-    await app.close()
-  });
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({

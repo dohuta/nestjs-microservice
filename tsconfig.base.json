@@ -15,7 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@sixteen/database": ["libs/database/src/index.ts"]
+      "@libs/db": ["libs/db/src/index.ts"],
+      "@libs/decorators": ["libs/decorators/src/index.ts"],
+      "@libs/dtos": ["libs/dtos/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp", "dist"]
