@@ -1,4 +1,4 @@
-import { User } from '@libs/db';
+import { User } from '../model/model.module';
 
 export const userProviders = [
   {

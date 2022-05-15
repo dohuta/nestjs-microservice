@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { User } from 'libs/db/src/model';
+import { User } from '@libs/db';
 
 export class SignUpPayload {
   @ApiProperty({ type: String, example: 'abc', required: true })

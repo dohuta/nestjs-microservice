@@ -1,7 +1,7 @@
 import { Controller, Get, HttpStatus, Logger, Post } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import * as bcrypt from 'bcrypt';
+// import * as bcrypt from 'bcrypt';
 
 import { UserService } from './app.service';
 import {
@@ -161,7 +161,7 @@ export class UserController {
     return result;
   }
 
-  private compareEncryptedPassword(a, b) {
-    return bcrypt.compare(b, a);
-  }
+  // private compareEncryptedPassword(a, b) {
+  //   return bcrypt.compare(b, a);
+  // }
 }

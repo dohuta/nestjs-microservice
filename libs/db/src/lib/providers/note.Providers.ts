@@ -1,4 +1,4 @@
-import { Note } from '@libs/db';
+import { Note } from '../model/model.module';
 
 export const noteProviders = [
   {

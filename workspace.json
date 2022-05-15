@@ -6,17 +6,6 @@
       "sourceRoot": "libs/db/src",
       "projectType": "library",
       "targets": {
-        "build": {
-          "executor": "@nrwl/js:tsc",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/db",
-            "tsConfig": "libs/db/tsconfig.lib.json",
-            "packageJson": "libs/db/package.json",
-            "main": "libs/db/src/index.ts",
-            "assets": ["libs/db/*.md"]
-          }
-        },
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "outputs": ["{options.outputFile}"],
@@ -40,17 +29,6 @@
       "sourceRoot": "libs/decorators/src",
       "projectType": "library",
       "targets": {
-        "build": {
-          "executor": "@nrwl/js:tsc",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/decorators",
-            "tsConfig": "libs/decorators/tsconfig.lib.json",
-            "packageJson": "libs/decorators/package.json",
-            "main": "libs/decorators/src/index.ts",
-            "assets": ["libs/decorators/*.md"]
-          }
-        },
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "outputs": ["{options.outputFile}"],
@@ -74,17 +52,6 @@
       "sourceRoot": "libs/dtos/src",
       "projectType": "library",
       "targets": {
-        "build": {
-          "executor": "@nrwl/js:tsc",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/dtos",
-            "tsConfig": "libs/dtos/tsconfig.lib.json",
-            "packageJson": "libs/dtos/package.json",
-            "main": "libs/dtos/src/index.ts",
-            "assets": ["libs/dtos/*.md"]
-          }
-        },
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "outputs": ["{options.outputFile}"],

@@ -1,4 +1,4 @@
-import { Token } from '@libs/db';
+import { Token } from '../model/model.module';
 
 export const tokenProviders = [
   {

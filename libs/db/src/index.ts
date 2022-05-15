@@ -1,3 +1,3 @@
-export * from './model';
-export * from './providers';
-export * from './lib/db.module';
+export * from './lib/model/model.module';
+export * from './lib/providers/providers.module';
+export * from './lib/database/db.module';

@@ -16,8 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@libs/db": ["libs/db/src/index.ts"],
-      "@libs/decorators": ["libs/decorators/src/index.ts"],
-      "@libs/dtos": ["libs/dtos/src/index.ts"]
+      // "@libs/decorators": ["libs/decorators/src/"],
+      "@libs/dtos": ["libs/dtos/src/"]
     }
   },
   "exclude": ["node_modules", "tmp", "dist"]
