@@ -21,7 +21,8 @@ export class UserController {
 
   @MessagePattern('user_search_by_email')
   public async searchUserByEmail(searchParams: {
-    email: string;
+    username: string;
+    password: string;
   }): Promise<BaseResponse<FindUserResponse | null>> {
     this.logger.log(
       `${this.searchUserByEmail.name} called::request ${JSON.stringify(
@@ -31,9 +32,9 @@ export class UserController {
 
     let result: BaseResponse<FindUserResponse | null>;
 
-    if (searchParams.email) {
+    if (searchParams.username) {
       const user = await this.userService.searchUser({
-        email: searchParams.email,
+        email: searchParams.username,
       });
 
       if (user && user.length == 1 && user[0].id) {

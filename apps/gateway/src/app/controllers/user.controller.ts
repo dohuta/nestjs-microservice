@@ -120,7 +120,7 @@ export class UsersController {
       );
     }
 
-    const createTokenResponse: BaseResponse<SignInResponse> =
+    const createTokenResponse: BaseResponse<string> =
       await firstValueFrom(
         this.tokenServiceClient.send('token_create', {
           userId: getUserResponse.data.id,
@@ -135,7 +135,7 @@ export class UsersController {
       status: HttpStatus.OK,
       message: createTokenResponse.message,
       data: {
-        token: createTokenResponse.data.token,
+        token: createTokenResponse.data,
       },
     };
   }
